@@ -1,0 +1,1571 @@
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PvZ ULTRA FUSION</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #gameCanvas {
+            border: 5px solid #654321;
+            background: linear-gradient(to bottom, #87CEEB 0%, #8B4513 20%, #8B4513 100%);
+            cursor: crosshair;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        #menu {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+            width: 900px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .plant-card {
+            background: linear-gradient(135deg, #434343 0%, #000000 100%);
+            padding: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .plant-card:hover {
+            transform: scale(1.1);
+            border-color: #00ff00;
+        }
+        .plant-card.selected {
+            border-color: yellow;
+            box-shadow: 0 0 20px yellow;
+            transform: scale(1.15);
+        }
+        .plant-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            font-size: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .plant-info {
+            color: white;
+            font-size: 11px;
+            text-align: center;
+            font-weight: bold;
+        }
+        #stats {
+            display: flex;
+            gap: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 12px 20px;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            margin-bottom: 10px;
+            width: 900px;
+            justify-content: space-between;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .stat {
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        #fusionInfo {
+            background: linear-gradient(90deg, #FF6B6B, #4ECDC4, #95E1D3, #FFD93D);
+            background-size: 300% 300%;
+            padding: 12px;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 10px;
+            width: 900px;
+            text-align: center;
+            font-weight: bold;
+            animation: gradientMove 3s ease infinite, glow 1.5s ease-in-out infinite;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        @keyframes gradientMove {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 15px #FF6B6B, 0 0 30px #4ECDC4; }
+            50% { box-shadow: 0 0 30px #4ECDC4, 0 0 45px #FF6B6B; }
+        }
+        #gameOver {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(0,0,0,0.95), rgba(50,0,0,0.95));
+            color: red;
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 36px;
+            z-index: 1000;
+            border: 5px solid red;
+            box-shadow: 0 0 50px rgba(255,0,0,0.5);
+        }
+        
+        #startScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: bgPulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes bgPulse {
+            0%, 100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            50% { background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); }
+        }
+        
+        .startTitle {
+            font-size: 72px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 5px 5px 10px rgba(0,0,0,0.8);
+            margin-bottom: 20px;
+            animation: titleBounce 2s ease-in-out infinite;
+        }
+        
+        @keyframes titleBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .startSubtitle {
+            font-size: 28px;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            margin-bottom: 40px;
+        }
+        
+        .startButton {
+            padding: 20px 60px;
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF0000 100%);
+            border: 5px solid #FFD700;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255,0,0,0.5);
+            transition: all 0.3s;
+            animation: buttonGlow 1.5s ease-in-out infinite;
+        }
+        
+        .startButton:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(255,0,0,0.8);
+        }
+        
+        .startButton:active {
+            transform: scale(0.95);
+        }
+        
+        @keyframes buttonGlow {
+            0%, 100% { box-shadow: 0 10px 30px rgba(255,0,0,0.5); }
+            50% { box-shadow: 0 15px 50px rgba(255,215,0,0.8); }
+        }
+        
+        .startInfo {
+            margin-top: 40px;
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.8;
+        }
+        
+        .startInfo div {
+            margin: 10px 0;
+        }
+        .fusion-plant {
+            animation: rainbow 2s linear infinite;
+        }
+        @keyframes rainbow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+        #fusionList {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            font-size: 12px;
+            max-width: 250px;
+            max-height: 600px;
+            overflow-y: auto;
+            border: 2px solid #FFD700;
+        }
+        .fusion-recipe {
+            margin: 8px 0;
+            padding: 5px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            border-left: 3px solid #FFD700;
+        }
+    </style>
+</head>
+<body>
+    <div id="startScreen">
+        <div class="startTitle">🔥 PVZ ULTRA FUSION 🔥</div>
+        <div class="startSubtitle">⚡ Bitkileri Birleştir, Zombileri Yok Et! ⚡</div>
+        <button class="startButton" onclick="startGame()">⚔️ SAVAŞ BAŞLASIN! ⚔️</button>
+        <div class="startInfo">
+            <div>🌻 30+ Farklı Fusion Kombinasyonu!</div>
+            <div>💀 10 Farklı Zombi Tipi!</div>
+            <div>👹 Boss Zombiler Her 5 Dalgada!</div>
+            <div>👿 Ultra Boss Her 10 Dalgada!</div>
+            <div>🧙 Her Dalgada Zombi Çağıran Summoner!</div>
+            <div>🖐️ Yeşil El ile Bitki Taşı ve Birleştir!</div>
+        </div>
+    </div>
+    
+    <h1 style="color: white; text-shadow: 3px 3px 6px rgba(0,0,0,0.8);">🔥 PVZ ULTRA FUSION 🔥</h1>
+    
+    <div id="fusionInfo">
+        ⚡ MEGA FUSION SISTEMI AKTIF! ⚡ Bitkileri 3 SEVIYEYE kadar geliştir!
+    </div>
+    
+    <div id="stats">
+        <div class="stat">☀️ Güneş: <span id="sun">250</span></div>
+        <div class="stat">⭐ Skor: <span id="score">0</span></div>
+        <div class="stat">🌊 Dalga: <span id="wave">1</span></div>
+        <div class="stat">⚡ Fusion: <span id="fusionCount">0</span></div>
+        <div class="stat">🏆 Combo: <span id="combo">0</span></div>
+    </div>
+    
+    <div id="menu">
+        <div class="plant-card" data-type="sunflower" data-cost="50">
+            <div class="plant-icon">🌻</div>
+            <div class="plant-info">Sunflower<br>💰 50</div>
+        </div>
+        <div class="plant-card" data-type="shooter" data-cost="100">
+            <div class="plant-icon">🌿</div>
+            <div class="plant-info">Shooter<br>💰 100</div>
+        </div>
+        <div class="plant-card" data-type="wall" data-cost="50">
+            <div class="plant-icon">🧱</div>
+            <div class="plant-info">Wall<br>💰 50</div>
+        </div>
+        <div class="plant-card" data-type="cherry" data-cost="150">
+            <div class="plant-icon">🍒</div>
+            <div class="plant-info">Cherry<br>💰 150</div>
+        </div>
+        <div class="plant-card" data-type="ice" data-cost="175">
+            <div class="plant-icon">❄️</div>
+            <div class="plant-info">Ice<br>💰 175</div>
+        </div>
+        <div class="plant-card" data-type="fire" data-cost="200">
+            <div class="plant-icon">🔥</div>
+            <div class="plant-info">Fire<br>💰 200</div>
+        </div>
+        <div class="plant-card" data-type="shovel" data-cost="0" style="background: linear-gradient(135deg, #00ff00 0%, #00aa00 100%);">
+            <div class="plant-icon">🖐️</div>
+            <div class="plant-info">Shovel<br>FREE</div>
+        </div>
+    </div>
+    
+    <canvas id="gameCanvas" width="900" height="500"></canvas>
+    
+    <div id="fusionList">
+        
+    
+    <div id="gameOver">
+        <div>☠️ GAME OVER ☠️</div>
+        <div style="font-size: 22px; margin-top: 20px; color: white;">
+            Final Skor: <span id="finalScore"></span><br>
+            Dalga: <span id="finalWave"></span><br>
+            Fusion Sayısı: <span id="finalFusion"></span><br>
+            En Yüksek Combo: <span id="finalCombo"></span>
+        </div>
+        <button onclick="location.reload()" style="margin-top: 25px; padding: 15px 40px; font-size: 20px; cursor: pointer; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-weight: bold;">
+            🔄 Yeniden Başla
+        </button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let sun = 250;
+        let score = 0;
+        let wave = 1;
+        let fusionCount = 0;
+        let combo = 0;
+        let maxCombo = 0;
+        let selectedPlant = null;
+        let gameOver = false;
+        let shovelMode = false;
+        let heldPlant = null;
+        
+        const plants = [];
+        const zombies = [];
+        const projectiles = [];
+        const explosions = [];
+        const particles = [];
+        
+        const GRID_SIZE = 90;
+        const ROWS = 5;
+        const COLS = 9;
+        
+        let gameStarted = false; // BAŞTA FALSE OLMALI!
+        
+        // ULTRA FUSION KOMBİNASYONLARI - 20+ FARKLI FUSION!
+        const FUSIONS = {
+            // Temel fusionlar
+            'sunflower+sunflower': { type: 'mega_sunflower', emoji: '🌟', name: 'Mega Sunflower' },
+            'shooter+shooter': { type: 'double_shooter', emoji: '🌲', name: 'Double Shooter' },
+            'wall+wall': { type: 'steel_wall', emoji: '🛡️', name: 'Steel Wall' },
+            'cherry+cherry': { type: 'nuke', emoji: '💣', name: 'Nuclear Bomb' },
+            'ice+ice': { type: 'freeze_tower', emoji: '🧊', name: 'Freeze Tower' },
+            'fire+fire': { type: 'inferno', emoji: '🌋', name: 'Inferno Tower' },
+            
+            // Combo fusionlar
+            'sunflower+shooter': { type: 'sun_shooter', emoji: '🌞', name: 'Sun Shooter' },
+            'shooter+wall': { type: 'tank_shooter', emoji: '🏰', name: 'Tank Shooter' },
+            'shooter+cherry': { type: 'exploding_shooter', emoji: '🎆', name: 'Explosive Shooter' },
+            'cherry+ice': { type: 'ice_bomb', emoji: '🧨', name: 'Ice Bomb' },
+            'cherry+fire': { type: 'mega_bomb', emoji: '🎇', name: 'Mega Bomb' },
+            'ice+fire': { type: 'lightning', emoji: '⚡', name: 'Lightning Tower' },
+            'sunflower+ice': { type: 'crystal_sun', emoji: '💎', name: 'Crystal Sunflower' },
+            'sunflower+fire': { type: 'nova', emoji: '🌠', name: 'Nova Star' },
+            'shooter+ice': { type: 'ice_shooter', emoji: '🌨️', name: 'Ice Shooter' },
+            'shooter+fire': { type: 'flame_shooter', emoji: '🎯', name: 'Flame Shooter' },
+            'wall+ice': { type: 'ice_wall', emoji: '🏔️', name: 'Ice Wall' },
+            'wall+fire': { type: 'fire_wall', emoji: '🌡️', name: 'Fire Wall' },
+            'sunflower+cherry': { type: 'sun_bomb', emoji: '☀️', name: 'Sun Bomb' },
+            'wall+cherry': { type: 'exploding_wall', emoji: '💥', name: 'Exploding Wall' },
+            
+            // Seviye 2 fusionlar (aynı tipi tekrar birleştir)
+            'mega_sunflower+mega_sunflower': { type: 'ultra_sunflower', emoji: '✨', name: 'Ultra Sunflower' },
+            'double_shooter+double_shooter': { type: 'triple_shooter', emoji: '🌳', name: 'Triple Shooter' },
+            'steel_wall+steel_wall': { type: 'titanium_wall', emoji: '🔰', name: 'Titanium Wall' },
+            'nuke+nuke': { type: 'super_nuke', emoji: '☢️', name: 'Super Nuke' },
+            'freeze_tower+freeze_tower': { type: 'absolute_zero', emoji: '🌬️', name: 'Absolute Zero' },
+            'inferno+inferno': { type: 'hell_fire', emoji: '👹', name: 'Hell Fire' },
+            
+            // Seviye 3 ultimate fusionlar
+            'ultra_sunflower+ultra_sunflower': { type: 'god_sun', emoji: '🌅', name: 'GOD SUN' },
+            'triple_shooter+triple_shooter': { type: 'gatling', emoji: '🎄', name: 'GATLING' },
+            'titanium_wall+titanium_wall': { type: 'fortress', emoji: '🏯', name: 'FORTRESS' },
+        };
+        
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 5;
+                this.vy = (Math.random() - 0.5) * 5;
+                this.color = color;
+                this.life = 30;
+                this.size = Math.random() * 5 + 2;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.1;
+                this.life--;
+            }
+            
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life / 30;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+        
+        class Plant {
+            constructor(x, y, type, fusionLevel = 0) {
+                this.x = x;
+                this.y = y;
+                this.type = type;
+                this.fusionLevel = fusionLevel;
+                this.shootTimer = 0;
+                this.sunTimer = 0;
+                this.specialTimer = 0;
+                this.rainbowOffset = 0;
+                this.pulseSize = 0;
+                
+                this.setupStats();
+            }
+            
+            setupStats() {
+                const stats = {
+                    // Temel bitkiler
+                    'sunflower': { health: 100, sunAmount: 25, sunDelay: 180 },
+                    'shooter': { health: 100, damage: 20, shootDelay: 60, projectiles: 1 },
+                    'wall': { health: 300 },
+                    'cherry': { health: 50, explodeTimer: 100, explodeRadius: 120 },
+                    'ice': { health: 120, damage: 15, shootDelay: 70, slow: true },
+                    'fire': { health: 120, damage: 30, shootDelay: 50, burn: true },
+                    
+                    // Level 1 fusionlar
+                    'mega_sunflower': { health: 200, sunAmount: 50, sunDelay: 120 },
+                    'double_shooter': { health: 200, damage: 30, shootDelay: 40, projectiles: 2 },
+                    'steel_wall': { health: 600 },
+                    'nuke': { health: 100, explodeTimer: 80, explodeRadius: 180 },
+                    'freeze_tower': { health: 250, damage: 25, shootDelay: 50, slow: true, freezeArea: true },
+                    'inferno': { health: 250, damage: 40, shootDelay: 40, burn: true, burnArea: true },
+                    'sun_shooter': { health: 150, damage: 25, shootDelay: 50, sunAmount: 35, sunDelay: 150, projectiles: 1 },
+                    'tank_shooter': { health: 400, damage: 35, shootDelay: 50, projectiles: 1 },
+                    'exploding_shooter': { health: 150, damage: 40, shootDelay: 50, projectiles: 1, explode: true },
+                    'ice_bomb': { health: 120, explodeTimer: 90, explodeRadius: 140, freezeAll: true },
+                    'mega_bomb': { health: 150, explodeTimer: 70, explodeRadius: 200 },
+                    'lightning': { health: 200, damage: 50, shootDelay: 80, chain: true },
+                    'crystal_sun': { health: 180, sunAmount: 60, sunDelay: 100 },
+                    'nova': { health: 200, damage: 45, shootDelay: 45, sunAmount: 40, sunDelay: 140, projectiles: 1, burn: true },
+                    'ice_shooter': { health: 180, damage: 28, shootDelay: 45, projectiles: 1, slow: true },
+                    'flame_shooter': { health: 180, damage: 38, shootDelay: 45, projectiles: 1, burn: true },
+                    'ice_wall': { health: 500, damageReflect: true, slow: true },
+                    'fire_wall': { health: 500, damageReflect: true, burn: true },
+                    'sun_bomb': { health: 120, explodeTimer: 95, explodeRadius: 130, sunBonus: true },
+                    'exploding_wall': { health: 450, explodeOnDeath: true },
+                    
+                    // Level 2 fusionlar
+                    'ultra_sunflower': { health: 300, sunAmount: 100, sunDelay: 80 },
+                    'triple_shooter': { health: 350, damage: 40, shootDelay: 30, projectiles: 3 },
+                    'titanium_wall': { health: 1000, damageReflect: true },
+                    'super_nuke': { health: 150, explodeTimer: 60, explodeRadius: 250 },
+                    'absolute_zero': { health: 400, damage: 35, shootDelay: 40, slow: true, freezeArea: true, areaSize: 2 },
+                    'hell_fire': { health: 400, damage: 60, shootDelay: 30, burn: true, burnArea: true, areaSize: 2 },
+                    
+                    // Level 3 ultimate fusionlar
+                    'god_sun': { health: 500, sunAmount: 200, sunDelay: 50 },
+                    'gatling': { health: 500, damage: 50, shootDelay: 15, projectiles: 5 },
+                    'fortress': { health: 2000, damageReflect: true, healNearby: true },
+                };
+                
+                const stat = stats[this.type] || stats['sunflower'];
+                this.maxHealth = stat.health;
+                this.health = this.maxHealth;
+                Object.assign(this, stat);
+                
+                const fusionData = Object.values(FUSIONS).find(f => f.type === this.type);
+                this.emoji = fusionData ? fusionData.emoji : this.getDefaultEmoji();
+            }
+            
+            getDefaultEmoji() {
+                const emojis = { sunflower: '🌻', shooter: '🌿', wall: '🧱', cherry: '🍒', ice: '❄️', fire: '🔥' };
+                return emojis[this.type] || '🌱';
+            }
+            
+            update() {
+                this.rainbowOffset += 0.05;
+                this.pulseSize = Math.sin(this.rainbowOffset * 2) * 3;
+                
+                // Güneş üretimi
+                if (this.sunAmount) {
+                    this.sunTimer++;
+                    if (this.sunTimer >= this.sunDelay) {
+                        sun += this.sunAmount;
+                        for(let i = 0; i < 10; i++) {
+                            particles.push(new Particle(this.x + 20, this.y + 20, '#FFD700'));
+                        }
+                        updateStats();
+                        this.sunTimer = 0;
+                    }
+                }
+                
+                // Ateş etme
+                if (this.damage && !this.explodeTimer) {
+                    this.shootTimer++;
+                    if (this.shootTimer >= this.shootDelay) {
+                        const hasZombieInRow = zombies.some(z => 
+                            Math.abs(z.y - this.y) < 40 && z.x > this.x
+                        );
+                        if (hasZombieInRow) {
+                            const projCount = this.projectiles || 1;
+                            for(let i = 0; i < projCount; i++) {
+                                const offset = projCount > 1 ? (i - projCount/2 + 0.5) * 15 : 0;
+                                projectiles.push(new Projectile(
+                                    this.x + 40, 
+                                    this.y + 20 + offset, 
+                                    this.damage,
+                                    this.explode,
+                                    this.slow,
+                                    this.burn,
+                                    this.chain
+                                ));
+                            }
+                            this.shootTimer = 0;
+                        }
+                    }
+                }
+                
+                // Alan etkisi (donma/yanma kulesi)
+                if (this.freezeArea || this.burnArea) {
+                    this.specialTimer++;
+                    if (this.specialTimer >= 30) {
+                        const areaRange = (this.areaSize || 1) * 100;
+                        zombies.forEach(zombie => {
+                            const dist = Math.sqrt((zombie.x - this.x) ** 2 + (zombie.y - this.y) ** 2);
+                            if (dist < areaRange) {
+                                if (this.freezeArea) zombie.speed = Math.max(0.1, zombie.speed * 0.8);
+                                if (this.burnArea) zombie.health -= 2;
+                            }
+                        });
+                        this.specialTimer = 0;
+                    }
+                }
+                
+                // Patlama zamanlayıcı
+                if (this.explodeTimer !== undefined && this.explodeTimer > 0) {
+                    this.explodeTimer--;
+                    if (this.explodeTimer <= 0) {
+                        explosions.push(new Explosion(
+                            this.x, 
+                            this.y, 
+                            this.explodeRadius,
+                            this.freezeAll,
+                            this.sunBonus
+                        ));
+                        this.health = 0;
+                    }
+                }
+                
+                // Yakındakileri iyileştir (fortress)
+                if (this.healNearby) {
+                    this.specialTimer++;
+                    if (this.specialTimer >= 60) {
+                        plants.forEach(p => {
+                            if (p !== this) {
+                                const dist = Math.sqrt((p.x - this.x) ** 2 + (p.y - this.y) ** 2);
+                                if (dist < 150) {
+                                    p.health = Math.min(p.maxHealth, p.health + 20);
+                                }
+                            }
+                        });
+                        this.specialTimer = 0;
+                    }
+                }
+            }
+            
+            draw() {
+                const isFused = Object.values(FUSIONS).some(f => f.type === this.type);
+                const size = 40 + this.pulseSize;
+                const offset = (40 - size) / 2;
+                
+                if (isFused) {
+                    const gradient = ctx.createLinearGradient(this.x, this.y, this.x + size, this.y + size);
+                    gradient.addColorStop(0, `hsl(${this.rainbowOffset * 100}, 80%, 60%)`);
+                    gradient.addColorStop(0.5, `hsl(${this.rainbowOffset * 100 + 120}, 80%, 60%)`);
+                    gradient.addColorStop(1, `hsl(${this.rainbowOffset * 100 + 240}, 80%, 60%)`);
+                    ctx.fillStyle = gradient;
+                } else {
+                    ctx.fillStyle = '#228B22';
+                }
+                
+                ctx.fillRect(this.x + offset, this.y + offset, size, size);
+                ctx.strokeStyle = isFused ? '#FFD700' : '#000';
+                ctx.lineWidth = isFused ? 4 : 2;
+                ctx.strokeRect(this.x + offset, this.y + offset, size, size);
+                
+                if (isFused) {
+                    ctx.shadowColor = '#FFD700';
+                    ctx.shadowBlur = 15;
+                }
+                
+                ctx.font = '32px Arial';
+                ctx.fillText(this.emoji, this.x + 4, this.y + 32);
+                
+                ctx.shadowBlur = 0;
+                
+                const healthPercent = this.health / this.maxHealth;
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(this.x, this.y - 8, 40, 6);
+                ctx.fillStyle = isFused ? '#00FF00' : '#32CD32';
+                ctx.fillRect(this.x, this.y - 8, 40 * healthPercent, 6);
+                
+                if (isFused) {
+                    ctx.fillStyle = '#FFD700';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.fillText('⚡', this.x + 30, this.y + 12);
+                }
+            }
+        }
+        
+        class Zombie {
+            constructor(row, type = 'normal') {
+                this.x = canvas.width - 50;
+                this.y = row * GRID_SIZE + 25;
+                this.type = type;
+                this.attacking = false;
+                this.attackTimer = 0;
+                this.burning = 0;
+                this.frozen = false;
+                this.setupStats();
+            }
+            
+            setupStats() {
+                const stats = {
+                    'normal': {
+                        health: 80 + wave * 15,
+                        speed: 0.35 + wave * 0.04,
+                        damage: 10,
+                        emoji: '🧟',
+                        color: '#800080',
+                        points: 10
+                    },
+                    'fast': {
+                        health: 50 + wave * 10,
+                        speed: 0.7 + wave * 0.05,
+                        damage: 8,
+                        emoji: '🏃',
+                        color: '#FF6347',
+                        points: 15
+                    },
+                    'tank': {
+                        health: 200 + wave * 25,
+                        speed: 0.2 + wave * 0.02,
+                        damage: 20,
+                        emoji: '🦾',
+                        color: '#696969',
+                        points: 30
+                    },
+                    'cone': {
+                        health: 150 + wave * 20,
+                        speed: 0.3 + wave * 0.03,
+                        damage: 12,
+                        emoji: '🎩',
+                        color: '#8B4513',
+                        points: 20
+                    },
+                    'bucket': {
+                        health: 300 + wave * 30,
+                        speed: 0.25 + wave * 0.03,
+                        damage: 15,
+                        emoji: '🪣',
+                        color: '#4682B4',
+                        points: 40
+                    },
+                    'football': {
+                        health: 250 + wave * 25,
+                        speed: 0.5 + wave * 0.04,
+                        damage: 18,
+                        emoji: '🏈',
+                        color: '#228B22',
+                        points: 35
+                    },
+                    'boss': {
+                        health: 500 + wave * 50,
+                        speed: 0.15 + wave * 0.02,
+                        damage: 30,
+                        emoji: '👹',
+                        color: '#8B0000',
+                        points: 100,
+                        size: 60
+                    },
+                    'ultra_boss': {
+                        health: 1500 + wave * 100,
+                        speed: 0.12 + wave * 0.015,
+                        damage: 50,
+                        emoji: '👿',
+                        color: '#4B0000',
+                        points: 500,
+                        size: 100,
+                        canSummon: true,
+                        summonCooldown: 0,
+                        shielded: true,
+                        shield: 500
+                    },
+                    'ninja': {
+                        health: 100 + wave * 15,
+                        speed: 0.8 + wave * 0.06,
+                        damage: 25,
+                        emoji: '🥷',
+                        color: '#2F4F4F',
+                        points: 50,
+                        canJump: true
+                    },
+                    'summoner': {
+                        health: 150,
+                        speed: 0.25,
+                        damage: 5,
+                        emoji: '🧙',
+                        color: '#9370DB',
+                        points: 30,
+                        canSummon: true,
+                        summonCooldown: 0
+                    }
+                };
+                
+                const stat = stats[this.type] || stats['normal'];
+                this.baseHealth = stat.health;
+                this.health = this.baseHealth;
+                this.maxHealth = this.health;
+                this.baseSpeed = stat.speed;
+                this.speed = this.baseSpeed;
+                this.damage = stat.damage;
+                this.emoji = stat.emoji;
+                this.color = stat.color;
+                this.points = stat.points;
+                this.size = stat.size || 40;
+                this.canJump = stat.canJump || false;
+                this.jumpCooldown = 0;
+                this.canSummon = stat.canSummon || false;
+                this.summonCooldown = stat.summonCooldown || 0;
+                this.shielded = stat.shielded || false;
+                this.shield = stat.shield || 0;
+                this.maxShield = this.shield;
+            }
+            
+            update() {
+                if (this.burning > 0) {
+                    this.health -= 0.5;
+                    this.burning--;
+                    if (Math.random() < 0.3) {
+                        particles.push(new Particle(this.x + 20, this.y + 20, '#FF4500'));
+                    }
+                }
+                
+                if (this.frozen) {
+                    this.speed = this.baseSpeed * 0.3;
+                    this.frozen = false;
+                } else {
+                    this.speed = this.baseSpeed;
+                }
+                
+                // Ninja zombi atlama yeteneği
+                if (this.canJump && this.jumpCooldown <= 0) {
+                    const nearPlant = plants.find(p => 
+                        Math.abs(this.y - p.y) < 50 && 
+                        this.x - p.x < 120 && 
+                        this.x - p.x > 40
+                    );
+                    
+                    if (nearPlant) {
+                        this.x -= 100; // Bitki üzerinden atla!
+                        this.jumpCooldown = 180;
+                        for(let i = 0; i < 10; i++) {
+                            particles.push(new Particle(this.x + 20, this.y + 20, '#FFD700'));
+                        }
+                    }
+                }
+                
+                if (this.jumpCooldown > 0) this.jumpCooldown--;
+                
+                // SUMMONER: Normal zombi çağırma (kolay)
+                if (this.canSummon && this.type === 'summoner') {
+                    this.summonCooldown--;
+                    
+                    if (this.summonCooldown <= 0) {
+                        // 3 saniyede 1 normal zombi çağır
+                        const randomRow = Math.floor(Math.random() * ROWS);
+                        const summonedZombie = new Zombie(randomRow, 'normal');
+                        summonedZombie.x = this.x + 50;
+                        zombies.push(summonedZombie);
+                        
+                        // Çağırma efekti
+                        for(let j = 0; j < 10; j++) {
+                            particles.push(new Particle(summonedZombie.x + 20, summonedZombie.y + 20, '#9370DB'));
+                        }
+                        
+                        this.summonCooldown = 180; // 3 saniyede bir çağır (60 FPS * 3 = 180)
+                    }
+                }
+                
+                // ULTRA BOSS: Zombi çağırma yeteneği!
+                if (this.canSummon) {
+                    this.summonCooldown--;
+                    
+                    if (this.summonCooldown <= 0) {
+                        // 3 zombi çağır!
+                        for(let i = 0; i < 3; i++) {
+                            const randomRow = Math.floor(Math.random() * ROWS);
+                            const summonTypes = ['fast', 'tank', 'cone', 'bucket'];
+                            const randomType = summonTypes[Math.floor(Math.random() * summonTypes.length)];
+                            const summonedZombie = new Zombie(randomRow, randomType);
+                            summonedZombie.x = this.x + 50; // Boss'un yanında spawn
+                            zombies.push(summonedZombie);
+                            
+                            // Çağırma efekti
+                            for(let j = 0; j < 15; j++) {
+                                particles.push(new Particle(summonedZombie.x + 20, summonedZombie.y + 20, '#8B0000'));
+                                particles.push(new Particle(summonedZombie.x + 20, summonedZombie.y + 20, '#FF0000'));
+                            }
+                        }
+                        
+                        this.summonCooldown = 300; // 5 saniyede bir çağır
+                    }
+                    
+                    // Shield yenileme
+                    if (this.shield <= 0 && this.health > this.maxHealth * 0.5) {
+                        this.shield = this.maxShield * 0.3;
+                        for(let i = 0; i < 20; i++) {
+                            particles.push(new Particle(this.x + 50, this.y + 50, '#00BFFF'));
+                        }
+                    }
+                }
+                
+                this.attacking = false;
+                for (let plant of plants) {
+                    if (Math.abs(this.y - plant.y) < 40 && 
+                        this.x - plant.x < this.size && this.x - plant.x > -20) {
+                        this.attacking = true;
+                        this.attackTimer++;
+                        if (this.attackTimer >= 60) {
+                            plant.health -= this.damage;
+                            if (plant.damageReflect) {
+                                this.health -= this.damage * 0.5;
+                            }
+                            this.attackTimer = 0;
+                        }
+                        break;
+                    }
+                }
+                
+                if (!this.attacking) {
+                    this.x -= this.speed;
+                    this.attackTimer = 0;
+                }
+                
+                if (this.x < -50) {
+                    endGame();
+                }
+            }
+            
+            draw() {
+                const isBurning = this.burning > 0;
+                const isBoss = this.type === 'boss';
+                const isUltraBoss = this.type === 'ultra_boss';
+                const isSummoner = this.type === 'summoner';
+                
+                // Boss için daha büyük çizim
+                const drawSize = this.size;
+                const offset = (40 - drawSize) / 2;
+                
+                // Ultra Boss için kalkan efekti
+                if (isUltraBoss && this.shield > 0) {
+                    ctx.strokeStyle = '#00BFFF';
+                    ctx.lineWidth = 8;
+                    ctx.globalAlpha = 0.5;
+                    ctx.beginPath();
+                    ctx.arc(this.x + 50, this.y + 50, 60, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.globalAlpha = 1;
+                }
+                
+                // Summoner için özel efekt
+                if (isSummoner) {
+                    ctx.strokeStyle = '#9370DB';
+                    ctx.lineWidth = 3;
+                    ctx.globalAlpha = 0.3;
+                    ctx.beginPath();
+                    ctx.arc(this.x + 20, this.y + 20, 25, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.globalAlpha = 1;
+                }
+                
+                ctx.fillStyle = isBurning ? '#FF4500' : this.color;
+                ctx.fillRect(this.x + offset, this.y + offset, drawSize, drawSize);
+                ctx.strokeStyle = isUltraBoss ? '#FF0000' : (isBoss ? '#FFD700' : (isSummoner ? '#9370DB' : '#000'));
+                ctx.lineWidth = isUltraBoss ? 6 : (isBoss ? 4 : (isSummoner ? 3 : 2));
+                ctx.strokeRect(this.x + offset, this.y + offset, drawSize, drawSize);
+                
+                if (isUltraBoss || isBoss) {
+                    ctx.shadowColor = isUltraBoss ? '#8B0000' : '#FF0000';
+                    ctx.shadowBlur = isUltraBoss ? 25 : 15;
+                }
+                
+                ctx.font = isUltraBoss ? '80px Arial' : (isBoss ? '50px Arial' : '30px Arial');
+                const emojiX = isUltraBoss ? this.x - 10 : (isBoss ? this.x - 5 : this.x + 5);
+                const emojiY = isUltraBoss ? this.y + 70 : (isBoss ? this.y + 40 : this.y + 32);
+                ctx.fillText(this.emoji, emojiX, emojiY);
+                
+                ctx.shadowBlur = 0;
+                
+                if (isBurning) {
+                    ctx.font = '20px Arial';
+                    ctx.fillText('🔥', this.x + 25, this.y + 10);
+                }
+                
+                // Sağlık çubuğu
+                const healthPercent = this.health / this.maxHealth;
+                const barWidth = isUltraBoss ? 100 : (isBoss ? 60 : 40);
+                const barHeight = isUltraBoss ? 10 : 6;
+                const barY = this.y - (isUltraBoss ? 20 : 8);
+                
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(this.x + offset, barY, barWidth, barHeight);
+                ctx.fillStyle = isUltraBoss ? '#FF0000' : (isBoss ? '#FFD700' : '#00FF00');
+                ctx.fillRect(this.x + offset, barY, barWidth * healthPercent, barHeight);
+                
+                // Kalkan çubuğu (Ultra Boss)
+                if (isUltraBoss && this.maxShield > 0) {
+                    const shieldPercent = this.shield / this.maxShield;
+                    ctx.fillStyle = '#0066CC';
+                    ctx.fillRect(this.x + offset, barY - 12, barWidth, 8);
+                    ctx.fillStyle = '#00BFFF';
+                    ctx.fillRect(this.x + offset, barY - 12, barWidth * shieldPercent, 8);
+                }
+                
+                // Boss için ekstra bilgi
+                if (isBoss) {
+                    ctx.fillStyle = '#FF0000';
+                    ctx.font = 'bold 12px Arial';
+                    ctx.fillText('BOSS', this.x + 10, this.y - 15);
+                }
+                
+                if (isUltraBoss) {
+                    ctx.fillStyle = '#FF0000';
+                    ctx.font = 'bold 16px Arial';
+                    ctx.fillText('💀 ULTRA BOSS 💀', this.x - 10, this.y - 35);
+                    
+                    // Summon cooldown göstergesi
+                    if (this.canSummon) {
+                        const cooldownPercent = (300 - this.summonCooldown) / 300;
+                        ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+                        ctx.fillRect(this.x + offset, this.y + drawSize + 5, barWidth, 4);
+                        ctx.fillStyle = '#FF0000';
+                        ctx.fillRect(this.x + offset, this.y + drawSize + 5, barWidth * cooldownPercent, 4);
+                    }
+                }
+                
+                // Summoner için cooldown göstergesi
+                if (isSummoner && this.canSummon) {
+                    const cooldownPercent = (180 - this.summonCooldown) / 180;
+                    ctx.fillStyle = 'rgba(147, 112, 219, 0.3)';
+                    ctx.fillRect(this.x, this.y + 42, 40, 3);
+                    ctx.fillStyle = '#9370DB';
+                    ctx.fillRect(this.x, this.y + 42, 40 * cooldownPercent, 3);
+                }
+            }
+        }
+        
+        class Projectile {
+            constructor(x, y, damage, explodes = false, slows = false, burns = false, chains = false) {
+                this.x = x;
+                this.y = y;
+                this.speed = 5;
+                this.damage = damage;
+                this.explodes = explodes;
+                this.slows = slows;
+                this.burns = burns;
+                this.chains = chains;
+                this.chained = [];
+            }
+            
+            update() {
+                this.x += this.speed;
+            }
+            
+            draw() {
+                let color = '#FFFF00';
+                if (this.burns) color = '#FF4500';
+                if (this.slows) color = '#00BFFF';
+                if (this.chains) color = '#9370DB';
+                
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                if (this.chains) {
+                    ctx.fillText('⚡', this.x - 5, this.y + 5);
+                }
+            }
+        }
+        
+        class Explosion {
+            constructor(x, y, maxRadius = 120, freezeAll = false, sunBonus = false) {
+                this.x = x;
+                this.y = y;
+                this.radius = 10;
+                this.maxRadius = maxRadius;
+                this.growing = true;
+                this.freezeAll = freezeAll;
+                this.sunBonus = sunBonus;
+            }
+            
+            update() {
+                if (this.growing) {
+                    this.radius += 10;
+                    if (this.radius >= this.maxRadius) {
+                        this.growing = false;
+                        
+                        if (this.sunBonus) {
+                            sun += 100;
+                            updateStats();
+                        }
+                    }
+                    
+                    zombies.forEach(zombie => {
+                        const dist = Math.sqrt((zombie.x - this.x) ** 2 + (zombie.y - this.y) ** 2);
+                        if (dist < this.maxRadius) {
+                            zombie.health = this.freezeAll ? 0 : zombie.health - 200;
+                            if (this.freezeAll) {
+                                zombie.frozen = true;
+                            }
+                        }
+                    });
+                    
+                    for(let i = 0; i < 5; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = this.radius + Math.random() * 20;
+                        particles.push(new Particle(
+                            this.x + 20 + Math.cos(angle) * dist,
+                            this.y + 20 + Math.sin(angle) * dist,
+                            this.freezeAll ? '#00BFFF' : '#FF4500'
+                        ));
+                    }
+                }
+            }
+            
+            draw() {
+                if (this.growing) {
+                    ctx.fillStyle = this.freezeAll ? 
+                        `rgba(0, 191, 255, ${1 - this.radius / this.maxRadius})` :
+                        `rgba(255, 100, 0, ${1 - this.radius / this.maxRadius})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x + 20, this.y + 20, this.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+        
+        function tryFusion(gridX, gridY, newType) {
+            const existingPlant = plants.find(p => 
+                Math.abs(p.x - gridX) < 40 && Math.abs(p.y - gridY) < 40
+            );
+            
+            if (existingPlant) {
+                const fusionKey1 = `${existingPlant.type}+${newType}`;
+                const fusionKey2 = `${newType}+${existingPlant.type}`;
+                
+                const fusion = FUSIONS[fusionKey1] || FUSIONS[fusionKey2];
+                
+                if (fusion) {
+                    const index = plants.indexOf(existingPlant);
+                    plants[index] = new Plant(gridX, gridY, fusion.type, existingPlant.fusionLevel + 1);
+                    fusionCount++;
+                    combo++;
+                    maxCombo = Math.max(maxCombo, combo);
+                    score += 50 + (combo * 10);
+                    
+                    for(let i = 0; i < 20; i++) {
+                        particles.push(new Particle(gridX + 20, gridY + 20, '#FFD700'));
+                    }
+                    
+                    updateStats();
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(139, 69, 19, 0.3)';
+            ctx.lineWidth = 1;
+            
+            for (let i = 0; i <= COLS; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * GRID_SIZE, 0);
+                ctx.lineTo(i * GRID_SIZE, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let i = 0; i <= ROWS; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * GRID_SIZE);
+                ctx.lineTo(canvas.width, i * GRID_SIZE);
+                ctx.stroke();
+            }
+        }
+        
+        function updateStats() {
+            document.getElementById('sun').textContent = sun;
+            document.getElementById('score').textContent = score;
+            document.getElementById('wave').textContent = wave;
+            document.getElementById('fusionCount').textContent = fusionCount;
+            document.getElementById('combo').textContent = combo;
+        }
+        
+        function endGame() {
+            gameOver = true;
+            document.getElementById('gameOver').style.display = 'block';
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalWave').textContent = wave;
+            document.getElementById('finalFusion').textContent = fusionCount;
+            document.getElementById('finalCombo').textContent = maxCombo;
+        }
+        
+        let zombieSpawnTimer = 0;
+        let zombieSpawnDelay = 120;
+        let summonerSpawned = false;
+        
+        // OYUNU BAŞLAT FONKSİYONU
+        function startGame() {
+            const startScreen = document.getElementById('startScreen');
+            startScreen.style.display = 'none';
+            gameStarted = true;
+            console.log('Oyun başladı!'); // Debug için
+        }
+        
+        function gameLoop() {
+            // Oyun başlamadıysa hiçbir şey yapma
+            if (!gameStarted) {
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+            
+            if (gameOver) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawGrid();
+            
+            // HER DALGADA 1 KEZ SUMMONER SPAWN ET!
+            if (!summonerSpawned) {
+                const summonerCount = zombies.filter(z => z.type === 'summoner').length;
+                if (summonerCount === 0) {
+                    const randomRow = Math.floor(Math.random() * ROWS);
+                    zombies.push(new Zombie(randomRow, 'summoner'));
+                    summonerSpawned = true; // Bu dalgada summoner spawn edildi
+                }
+            }
+            
+            zombieSpawnTimer++;
+            if (zombieSpawnTimer >= zombieSpawnDelay) {
+                const row = Math.floor(Math.random() * ROWS);
+                
+                // Zombi tipi seçimi - dalgaya göre zorluk artar
+                let zombieType = 'normal';
+                const rand = Math.random() * 100;
+                
+                if (wave >= 5) {
+                    // Her 10 dalgada bir ULTRA BOSS! (10, 20, 30, 40...)
+                    if (wave % 10 === 0 && zombies.filter(z => z.type === 'ultra_boss').length === 0) {
+                        zombieType = 'ultra_boss';
+                    }
+                    // Her 5 dalgada bir BOSS! (5, 10, 15, 20, 25, 30...)
+                    else if (wave % 5 === 0 && zombies.filter(z => z.type === 'boss').length === 0) {
+                        zombieType = 'boss';
+                    }
+                    else if (wave >= 10 && rand < 15) {
+                        zombieType = 'ninja';
+                    } else if (wave >= 10 && rand < 30) {
+                        zombieType = 'bucket';
+                    } else if (wave >= 10 && rand < 45) {
+                        zombieType = 'football';
+                    } else if (rand < 60) {
+                        zombieType = 'tank';
+                    } else if (rand < 75) {
+                        zombieType = 'cone';
+                    } else if (rand < 85) {
+                        zombieType = 'fast';
+                    }
+                } else if (wave >= 7) {
+                    if (rand < 20) {
+                        zombieType = 'football';
+                    } else if (rand < 40) {
+                        zombieType = 'tank';
+                    } else if (rand < 60) {
+                        zombieType = 'cone';
+                    } else if (rand < 80) {
+                        zombieType = 'fast';
+                    }
+                } else if (wave >= 5) {
+                    if (rand < 30) {
+                        zombieType = 'cone';
+                    } else if (rand < 60) {
+                        zombieType = 'tank';
+                    } else if (rand < 85) {
+                        zombieType = 'fast';
+                    }
+                } else if (wave >= 3) {
+                    if (rand < 40) {
+                        zombieType = 'fast';
+                    } else if (rand < 70) {
+                        zombieType = 'cone';
+                    }
+                } else if (wave >= 2) {
+                    if (rand < 30) {
+                        zombieType = 'fast';
+                    }
+                }
+                
+                zombies.push(new Zombie(row, zombieType));
+                zombieSpawnTimer = 0;
+                zombieSpawnDelay = Math.max(40, 120 - wave * 4);
+            }
+            
+            particles.forEach((p, i) => {
+                p.update();
+                p.draw();
+                if (p.life <= 0) particles.splice(i, 1);
+            });
+            
+            plants.forEach((plant, i) => {
+                plant.update();
+                plant.draw();
+                if (plant.health <= 0) {
+                    if (plant.explodeOnDeath) {
+                        explosions.push(new Explosion(plant.x, plant.y, 100));
+                    }
+                    plants.splice(i, 1);
+                    combo = 0;
+                }
+            });
+            
+            zombies.forEach((zombie, i) => {
+                zombie.update();
+                zombie.draw();
+                if (zombie.health <= 0) {
+                    zombies.splice(i, 1);
+                    score += zombie.points;
+                    combo++;
+                    maxCombo = Math.max(maxCombo, combo);
+                    
+                    // Boss öldürme bonusu!
+                    if (zombie.type === 'boss') {
+                        sun += 200;
+                        score += 100;
+                        for(let j = 0; j < 50; j++) {
+                            particles.push(new Particle(zombie.x + 30, zombie.y + 30, '#FFD700'));
+                            particles.push(new Particle(zombie.x + 30, zombie.y + 30, '#FF0000'));
+                        }
+                    }
+                    
+                    // ULTRA BOSS öldürme MEGA BONUSU!
+                    if (zombie.type === 'ultra_boss') {
+                        sun += 500;
+                        score += 500;
+                        wave += 2; // 2 dalga atlat!
+                        
+                        // DEV PATLAMA EFEKTİ!
+                        for(let j = 0; j < 100; j++) {
+                            particles.push(new Particle(zombie.x + 50, zombie.y + 50, '#FFD700'));
+                            particles.push(new Particle(zombie.x + 50, zombie.y + 50, '#FF0000'));
+                            particles.push(new Particle(zombie.x + 50, zombie.y + 50, '#00BFFF'));
+                        }
+                        
+                        // Tüm zombileri öldür!
+                        explosions.push(new Explosion(zombie.x, zombie.y, 400));
+                    }
+                    
+                    if (score % 150 === 0) {
+                        wave++;
+                        summonerSpawned = false; // Yeni dalga başladı, summoner spawn'ını resetle
+                    }
+                    updateStats();
+                }
+            });
+            
+            projectiles.forEach((proj, i) => {
+                proj.update();
+                proj.draw();
+                
+                if (proj.x > canvas.width) {
+                    projectiles.splice(i, 1);
+                    return;
+                }
+                
+                zombies.forEach(zombie => {
+                    if (Math.abs(proj.x - zombie.x - 20) < 30 && 
+                        Math.abs(proj.y - zombie.y - 20) < 30) {
+                        
+                        let damageAmount = proj.damage;
+                        
+                        // Ultra Boss kalkanlı ise önce kalkanı vur
+                        if (zombie.shield > 0) {
+                            const shieldDamage = Math.min(zombie.shield, damageAmount);
+                            zombie.shield -= shieldDamage;
+                            damageAmount -= shieldDamage;
+                            
+                            // Kalkan patlaması
+                            if (zombie.shield <= 0) {
+                                for(let k = 0; k < 20; k++) {
+                                    particles.push(new Particle(zombie.x + 50, zombie.y + 50, '#00BFFF'));
+                                }
+                            }
+                        }
+                        
+                        zombie.health -= damageAmount;
+                        
+                        if (proj.slows) zombie.frozen = true;
+                        if (proj.burns) zombie.burning = 60;
+                        
+                        if (proj.explodes) {
+                            // Küçük patlama - sadece yakındaki 1-2 zombiye az hasar
+                            const miniExplosionRadius = 60;
+                            zombies.forEach(z => {
+                                const dist = Math.sqrt((z.x - proj.x) ** 2 + (z.y - proj.y) ** 2);
+                                if (dist < miniExplosionRadius && z !== zombie) {
+                                    z.health -= proj.damage * 0.3; // Sadece %30 hasar
+                                }
+                            });
+                            
+                            // Görsel efekt
+                            for(let k = 0; k < 10; k++) {
+                                particles.push(new Particle(proj.x, proj.y, '#FF6347'));
+                            }
+                        }
+                        
+                        if (proj.chains && !proj.chained.includes(zombie)) {
+                            proj.chained.push(zombie);
+                            if (proj.chained.length < 3) {
+                                zombies.forEach(z => {
+                                    if (z !== zombie && !proj.chained.includes(z)) {
+                                        const dist = Math.sqrt((z.x - zombie.x) ** 2 + (z.y - zombie.y) ** 2);
+                                        if (dist < 100) {
+                                            z.health -= proj.damage * 0.7;
+                                            proj.chained.push(z);
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                        
+                        if (!proj.chains) {
+                            projectiles.splice(i, 1);
+                        }
+                    }
+                });
+            });
+            
+            explosions.forEach((exp, i) => {
+                exp.update();
+                exp.draw();
+                if (!exp.growing) {
+                    explosions.splice(i, 1);
+                }
+            });
+            
+            // Elde tutulan bitki varsa en üstte çiz
+            drawHeldPlant();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Elde tutulan bitkiyi çiz
+        canvas.addEventListener('mousemove', (e) => {
+            if (heldPlant) {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                // Mouse pozisyonunu güncelle
+                heldPlant.displayX = mouseX - 20;
+                heldPlant.displayY = mouseY - 20;
+            }
+        });
+        
+        function drawHeldPlant() {
+            if (heldPlant) {
+                ctx.save();
+                ctx.globalAlpha = 0.7;
+                
+                const isFused = Object.values(FUSIONS).some(f => f.type === heldPlant.type);
+                
+                if (isFused) {
+                    const gradient = ctx.createLinearGradient(
+                        heldPlant.displayX, 
+                        heldPlant.displayY, 
+                        heldPlant.displayX + 40, 
+                        heldPlant.displayY + 40
+                    );
+                    gradient.addColorStop(0, `hsl(${heldPlant.rainbowOffset * 100}, 80%, 60%)`);
+                    gradient.addColorStop(0.5, `hsl(${heldPlant.rainbowOffset * 100 + 120}, 80%, 60%)`);
+                    gradient.addColorStop(1, `hsl(${heldPlant.rainbowOffset * 100 + 240}, 80%, 60%)`);
+                    ctx.fillStyle = gradient;
+                } else {
+                    ctx.fillStyle = '#228B22';
+                }
+                
+                ctx.fillRect(heldPlant.displayX, heldPlant.displayY, 40, 40);
+                ctx.strokeStyle = isFused ? '#FFD700' : '#000';
+                ctx.lineWidth = isFused ? 4 : 2;
+                ctx.strokeRect(heldPlant.displayX, heldPlant.displayY, 40, 40);
+                
+                if (isFused) {
+                    ctx.shadowColor = '#FFD700';
+                    ctx.shadowBlur = 15;
+                }
+                
+                ctx.font = '32px Arial';
+                ctx.fillText(heldPlant.emoji, heldPlant.displayX + 4, heldPlant.displayY + 32);
+                
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            }
+        }
+        
+        document.querySelectorAll('.plant-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const type = card.dataset.type;
+                const cost = parseInt(card.dataset.cost);
+                
+                document.querySelectorAll('.plant-card').forEach(c => c.classList.remove('selected'));
+                
+                if (type === 'shovel') {
+                    shovelMode = true;
+                    selectedPlant = null;
+                    card.classList.add('selected');
+                    canvas.style.cursor = 'pointer';
+                } else if (sun >= cost) {
+                    shovelMode = false;
+                    card.classList.add('selected');
+                    selectedPlant = { type, cost };
+                    canvas.style.cursor = 'crosshair';
+                }
+            });
+        });
+        
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const gridX = Math.floor(x / GRID_SIZE) * GRID_SIZE + 25;
+            const gridY = Math.floor(y / GRID_SIZE) * GRID_SIZE + 25;
+            
+            // ELİMİZDE BİTKİ VARSA - Koy veya birleştir!
+            if (heldPlant) {
+                // Hedef yerde bitki var mı kontrol et
+                const targetPlant = plants.find(p => 
+                    Math.abs(p.x - gridX) < 40 && Math.abs(p.y - gridY) < 40
+                );
+                
+                if (targetPlant) {
+                    // BİRLEŞTİRME!
+                    const fusionKey1 = `${heldPlant.type}+${targetPlant.type}`;
+                    const fusionKey2 = `${targetPlant.type}+${heldPlant.type}`;
+                    const fusion = FUSIONS[fusionKey1] || FUSIONS[fusionKey2];
+                    
+                    if (fusion) {
+                        // FUSION BAŞARILI!
+                        const index = plants.indexOf(targetPlant);
+                        plants[index] = new Plant(gridX, gridY, fusion.type, targetPlant.fusionLevel + 1);
+                        fusionCount++;
+                        combo++;
+                        maxCombo = Math.max(maxCombo, combo);
+                        score += 75 + (combo * 15); // Daha fazla puan - elle birleştirme zor!
+                        
+                        for(let i = 0; i < 30; i++) {
+                            particles.push(new Particle(gridX + 20, gridY + 20, '#FFD700'));
+                            particles.push(new Particle(gridX + 20, gridY + 20, '#FF1493'));
+                        }
+                        
+                        updateStats();
+                        heldPlant = null;
+                        shovelMode = false;
+                        canvas.style.cursor = 'crosshair';
+                        document.querySelectorAll('.plant-card').forEach(c => c.classList.remove('selected'));
+                        return;
+                    }
+                }
+                
+                // Hedefte bitki yoksa - normal yerleştir
+                const canPlace = !plants.some(p => 
+                    Math.abs(p.x - gridX) < 40 && Math.abs(p.y - gridY) < 40
+                );
+                
+                if (canPlace) {
+                    heldPlant.x = gridX;
+                    heldPlant.y = gridY;
+                    plants.push(heldPlant);
+                    
+                    for(let i = 0; i < 10; i++) {
+                        particles.push(new Particle(gridX + 20, gridY + 20, '#00ff00'));
+                    }
+                }
+                
+                heldPlant = null;
+                shovelMode = false;
+                canvas.style.cursor = 'crosshair';
+                document.querySelectorAll('.plant-card').forEach(c => c.classList.remove('selected'));
+                return;
+            }
+            
+            // SHOVEL MODE - Bitki al veya kaldır!
+            if (shovelMode) {
+                const plantToGrab = plants.find(p => 
+                    Math.abs(p.x - gridX) < 40 && Math.abs(p.y - gridY) < 40
+                );
+                
+                if (plantToGrab) {
+                    const index = plants.indexOf(plantToGrab);
+                    heldPlant = plants[index];
+                    heldPlant.displayX = x - 20;
+                    heldPlant.displayY = y - 20;
+                    plants.splice(index, 1);
+                    
+                    // Yeşil parlama efekti
+                    for(let i = 0; i < 15; i++) {
+                        particles.push(new Particle(gridX + 20, gridY + 20, '#00ff00'));
+                    }
+                    
+                    canvas.style.cursor = 'grab';
+                }
+                return;
+            }
+            
+            if (!selectedPlant) return;
+            
+            if (tryFusion(gridX, gridY, selectedPlant.type)) {
+                sun -= selectedPlant.cost;
+                updateStats();
+                selectedPlant = null;
+                document.querySelectorAll('.plant-card').forEach(c => c.classList.remove('selected'));
+                return;
+            }
+            
+            const canPlace = !plants.some(p => 
+                Math.abs(p.x - gridX) < 40 && Math.abs(p.y - gridY) < 40
+            );
+            
+            if (canPlace && sun >= selectedPlant.cost) {
+                plants.push(new Plant(gridX, gridY, selectedPlant.type));
+                sun -= selectedPlant.cost;
+                updateStats();
+                selectedPlant = null;
+                combo = 0;
+                document.querySelectorAll('.plant-card').forEach(c => c.classList.remove('selected'));
+            }
+        });
+        
+        // Oyun loop'unu başlat (ama oyun gameStarted = true olana kadar bekler)
+        gameLoop();
+    </script>
+</body>
+</html>
+"""
+
